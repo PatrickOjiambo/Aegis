@@ -1,2 +1,8 @@
 [[contracts]]
 fqn = "flipper::Flipper"
+
+[[contracts]]
+fqn = "reputation::ReputationRegistry"
+
+[[contracts]]
+fqn = "escrow::EscrowVault"
