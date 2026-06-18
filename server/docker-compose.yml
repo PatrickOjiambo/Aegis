@@ -1,0 +1,55 @@
+# Local MongoDB for Aegis development.
+#
+# Runs as a single-node replica set ("rs0") so that Mongoose multi-document
+# transactions are available (transactions require a replica set, even with one
+# node). The `mongo-init` one-shot container initiates the replica set on first
+# boot; it is idempotent and safe to re-run.
+#
+#   pnpm mongo:up      # start
+#   pnpm mongo:down    # stop
+#
+# Connect with: mongodb://localhost:27017/aegis?replicaSet=rs0&directConnection=true
+services:
+  mongo:
+    image: mongo:7
+    container_name: aegis-mongo
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - aegis-mongo-data:/data/db
+    healthcheck:
+      # Healthy only once the node is a replica-set PRIMARY and accepting writes.
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.hello().isWritablePrimary"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 5s
+
+  mongo-init:
+    image: mongo:7
+    container_name: aegis-mongo-init
+    depends_on:
+      - mongo
+    restart: "no"
+    entrypoint:
+      - bash
+      - -c
+      - |
+        echo "Waiting for mongod to accept connections..."
+        until mongosh --host mongo:27017 --quiet --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
+          sleep 1
+        done
+        echo "Initiating replica set rs0 (idempotent)..."
+        mongosh --host mongo:27017 --quiet --eval '
+          try {
+            rs.status();
+            print("Replica set already initiated.");
+          } catch (e) {
+            rs.initiate({ _id: "rs0", members: [{ _id: 0, host: "localhost:27017" }] });
+            print("Replica set initiated.");
+          }
+        '
+
+volumes:
+  aegis-mongo-data:

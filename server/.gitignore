@@ -73,3 +73,6 @@ typings/
 .serverless
 
 dist
+# Aegis signing keys (never commit secret keys)
+keys/
+*.pem

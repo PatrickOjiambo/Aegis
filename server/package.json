@@ -1,29 +1,37 @@
 {
-  "name": "express-api-starter-ts",
-  "version": "2.0.0",
-  "description": "A basic starter for an express.js v5 API with Typescript",
-  "author": "CJ R. <cj@null.computer> (https://w3cj.now.sh)",
+  "name": "aegis-server",
+  "version": "0.1.0",
+  "description": "Aegis — autonomous dispute-arbiter backend (A2A agents + ADK + Casper) for the agent economy",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/w3cj/express-api-starter-ts.git"
-  },
-  "keywords": [],
-  "main": "src/index.ts",
+  "type": "module",
+  "main": "dist/src/index.js",
   "scripts": {
     "start": "node --env-file=.env dist/src/index.js",
     "dev": "tsx watch --env-file=.env src/index.ts",
+    "demo": "tsx --env-file=.env scripts/demo-dispute.ts",
+    "mongo:up": "docker compose up -d",
+    "mongo:down": "docker compose down",
     "build": "tsc",
-    "lint": "eslint --fix src test",
+    "lint": "eslint --fix src test scripts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@a2a-js/sdk": "0.3.13",
+    "@google/adk": "1.2.0",
+    "@google/genai": "1.52.0",
+    "@noble/hashes": "2.2.0",
+    "casper-js-sdk": "5.0.12",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
+    "mongoose": "9.7.0",
     "morgan": "^1.10.1",
-    "zod": "^4.1.12"
+    "openai": "6.43.0",
+    "pino": "10.3.1",
+    "pino-http": "11.0.0",
+    "uuid": "14.0.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.2.0",
@@ -34,6 +42,8 @@
     "@types/supertest": "^6.0.3",
     "eslint": "^9.38.0",
     "eslint-plugin-format": "^1.0.2",
+    "mongodb-memory-server": "^10.4.3",
+    "pino-pretty": "^13.1.3",
     "supertest": "^7.1.4",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
