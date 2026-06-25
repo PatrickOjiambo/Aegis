@@ -1,4 +1,4 @@
-import { Args, CLValue, Key } from "casper-js-sdk";
+import { Args, CLValue, Key } from "./sdk.js";
 
 import type { Hex32 } from "../../domain/common.js";
 import type { Verdict } from "../../domain/escrow.schema.js";

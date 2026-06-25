@@ -1,4 +1,4 @@
-import { ContractCallBuilder, HttpHandler, RpcClient, SessionBuilder } from "casper-js-sdk";
+import { ContractCallBuilder, HttpHandler, RpcClient, SessionBuilder } from "./sdk.js";
 import { readFileSync } from "node:fs";
 
 import type { Hex32 } from "../../domain/common.js";

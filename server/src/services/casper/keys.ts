@@ -1,9 +1,9 @@
-import type { PublicKey } from "casper-js-sdk";
+import type { PublicKey } from "./sdk.js";
 
-import { KeyAlgorithm, PrivateKey } from "casper-js-sdk";
 import { readFileSync } from "node:fs";
 
 import { ConfigError } from "../../lib/errors.js";
+import { KeyAlgorithm, PrivateKey } from "./sdk.js";
 
 /** A loaded signing identity for an Aegis agent. */
 export type AgentKey = {
