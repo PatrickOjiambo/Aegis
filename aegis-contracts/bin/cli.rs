@@ -1,44 +1,48 @@
-//! This example demonstrates how to use the `odra-cli` tool to deploy and interact with a smart contract.
+//! odra-cli livenet driver for Aegis Contract B (ReputationRegistry).
+//!
+//! Deploys the registry to a live Casper network and exposes the simplest
+//! real Aegis on-chain action — `add_writer` (owner-gated) — as a scenario.
+//!
+//! Network/keys are read from `.env` (ODRA_CASPER_LIVENET_*) by odra.
 
-use aegis_contracts::flipper::Flipper;
+use aegis_contracts::reputation::ReputationRegistry;
 use odra::host::{HostEnv, NoArgs};
+use odra::prelude::Address;
 use odra::schema::casper_contract_schema::NamedCLType;
 use odra_cli::{
     deploy::DeployScript,
     scenario::{Args, Error, Scenario, ScenarioMetadata},
-    CommandArg, ContractProvider, DeployedContractsContainer, DeployerExt,
-    OdraCli, 
+    CommandArg, ContractProvider, DeployedContractsContainer, DeployerExt, OdraCli,
 };
 
-/// Deploys the `Flipper` and adds it to the container.
-pub struct FlipperDeployScript;
+/// Deploys `ReputationRegistry` (deployer becomes owner) into the container.
+pub struct ReputationDeployScript;
 
-impl DeployScript for FlipperDeployScript {
+impl DeployScript for ReputationDeployScript {
     fn deploy(
         &self,
         env: &HostEnv,
-        container: &mut DeployedContractsContainer
+        container: &mut DeployedContractsContainer,
     ) -> Result<(), odra_cli::deploy::Error> {
-        let _flipper = Flipper::load_or_deploy(
-            &env,
+        let _registry = ReputationRegistry::load_or_deploy(
+            env,
             NoArgs,
             container,
-            350_000_000_000 // Adjust gas limit as needed
+            350_000_000_000, // install gas limit (motes)
         )?;
-
         Ok(())
     }
 }
 
-/// Scenario that flips the state of the deployed `Flipper` contract a specified number of times.
-pub struct FlippingScenario;
+/// Registers an address as an authorized writer. Owner only.
+pub struct AddWriterScenario;
 
-impl Scenario for FlippingScenario {
+impl Scenario for AddWriterScenario {
     fn args(&self) -> Vec<CommandArg> {
         vec![CommandArg::new(
-            "number",
-            "The number of times to flip the state",
-            NamedCLType::U64,
+            "writer",
+            "Address (account-hash-... or hash-...) to authorize as a writer",
+            NamedCLType::Key,
         )]
     }
 
@@ -46,33 +50,28 @@ impl Scenario for FlippingScenario {
         &self,
         env: &HostEnv,
         container: &DeployedContractsContainer,
-        args: Args
+        args: Args,
     ) -> Result<(), Error> {
-        let mut contract = container.contract_ref::<Flipper>(env)?;
-        let n = args.get_single::<u64>("name")?;
-
-        env.set_gas(50_000_000);
-        for _ in 0..n {
-            contract.try_flip()?;
-        }
-
+        let mut registry = container.contract_ref::<ReputationRegistry>(env)?;
+        let writer = args.get_single::<Address>("writer")?;
+        env.set_gas(2_000_000_000);
+        registry.try_add_writer(writer)?;
         Ok(())
     }
 }
 
-impl ScenarioMetadata for FlippingScenario {
-    const NAME: &'static str = "flip";
+impl ScenarioMetadata for AddWriterScenario {
+    const NAME: &'static str = "add_writer";
     const DESCRIPTION: &'static str =
-        "Flips the state of the deployed flipper contract a specified number of times";
+        "Authorize an address as a ReputationRegistry writer (owner only)";
 }
 
-/// Main function to run the CLI tool.
 pub fn main() {
     OdraCli::new()
-        .about("CLI tool for aegis_contracts smart contract")
-        .deploy(FlipperDeployScript)
-        .contract::<Flipper>()
-        .scenario(FlippingScenario)
+        .about("CLI tool for Aegis ReputationRegistry")
+        .deploy(ReputationDeployScript)
+        .contract::<ReputationRegistry>()
+        .scenario(AddWriterScenario)
         .build()
         .run();
 }

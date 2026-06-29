@@ -1,0 +1,8 @@
+# Local override: host port 27017 is already taken by a standalone system
+# mongod, so expose the Aegis replica-set container on 27018 instead.
+# The container still listens on 27017 internally; only the host mapping moves.
+# Connect with: mongodb://localhost:27018/aegis?replicaSet=rs0&directConnection=true
+services:
+  mongo:
+    ports: !override
+      - "27018:27017"

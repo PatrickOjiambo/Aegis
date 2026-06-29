@@ -1,0 +1,8 @@
+# Casper's execution engine runs a wasm MVP VM: it rejects post-MVP features
+# (bulk-memory, sign-ext, etc.) that nightly Rust emits by default. Force MVP
+# codegen so installed contract wasm passes preprocessing on testnet/mainnet.
+[target.wasm32-unknown-unknown]
+rustflags = [
+  "-C", "target-cpu=mvp",
+  "-C", "target-feature=-bulk-memory,-sign-ext,-mutable-globals,-nontrapping-fptoint,-reference-types,-multivalue,-bulk-memory-opt,-extended-const",
+]

@@ -3,6 +3,10 @@ edition = "2021"
 name = "aegis_contracts"
 version = "0.1.0"
 
+[features]
+# Enables std + the odra-cli livenet driver (bin/cli.rs). Off for wasm builds.
+livenet = []
+
 [dependencies]
 odra = { version = "2.7.0", features = [], default-features = false }
 
